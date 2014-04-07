@@ -83,7 +83,7 @@ int SickTim3xxCommonUsb::close_device()
   libusb_exit(ctx_);
   return result;
 }
-
+// cppcheck-suppress memleakOnRealloc
 /**
  * Returns a list of USB devices currently attached to the system and matching the given vendorID and productID.
  */
@@ -118,14 +118,17 @@ ssize_t SickTim3xxCommonUsb::getSOPASDeviceList(libusb_context *ctx, uint16_t ve
       /*
        * Add the matching device to the function result list and increase the device reference count.
        */
-      resultDevices = (libusb_device **)realloc(resultDevices, sizeof(libusb_device *) * (numberOfResultDevices + 2));
-      if (resultDevices == NULL)
+      void* tmp = realloc(resultDevices, sizeof(libusb_device *) * (numberOfResultDevices + 2));
+      if (tmp == NULL)
       {
+        free(resultDevices);
+        resultDevices = NULL;
         ROS_ERROR("LIBUSB - Failed to allocate memory for the device result list.");
         diagnostics_.broadcast(diagnostic_msgs::DiagnosticStatus::ERROR, "LIBUSB - Failed to allocate memory for the device result list.");
       }
       else
       {
+        resultDevices = (libusb_device **) tmp;
         resultDevices[numberOfResultDevices] = devices[i];
         resultDevices[numberOfResultDevices + 1] = NULL;
         libusb_ref_device(devices[i]);
