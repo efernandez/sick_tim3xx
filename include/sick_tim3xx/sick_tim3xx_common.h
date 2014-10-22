@@ -97,6 +97,7 @@ protected:
 private:
   // ROS
   ros::NodeHandle nh_;
+  ros::NodeHandle priv_nh_;
   ros::Publisher pub_;
   ros::Publisher datagram_pub_;
   bool publish_datagram_;

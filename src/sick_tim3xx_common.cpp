@@ -41,17 +41,19 @@
 namespace sick_tim3xx
 {
 
-SickTim3xxCommon::SickTim3xxCommon(AbstractParser* parser) :
-    diagnosticPub_(NULL), expectedFrequency_(15.0), parser_(parser)
-    // FIXME All Tims have 15Hz?
+SickTim3xxCommon::SickTim3xxCommon(AbstractParser* parser)
+  : priv_nh_("~")
+  , diagnosticPub_(NULL)
+  , expectedFrequency_(15.0) // FIXME All Tims have 15Hz?
+  , dynamic_reconfigure_server_(priv_nh_)
+  , parser_(parser)
 {
   dynamic_reconfigure::Server<sick_tim3xx::SickTim3xxConfig>::CallbackType f;
   f = boost::bind(&sick_tim3xx::SickTim3xxCommon::update_config, this, _1, _2);
   dynamic_reconfigure_server_.setCallback(f);
 
   // datagram publisher (only for debug)
-  ros::NodeHandle pn("~");
-  pn.param<bool>("publish_datagram", publish_datagram_, false);
+  priv_nh_.param<bool>("publish_datagram", publish_datagram_, false);
   if (publish_datagram_)
     datagram_pub_ = nh_.advertise<std_msgs::String>("datagram", 1000);
 
