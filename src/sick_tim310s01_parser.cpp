@@ -36,6 +36,8 @@
 
 #include <ros/ros.h>
 
+#include <limits>
+
 namespace sick_tim3xx
 {
 
@@ -178,7 +180,9 @@ int SickTim310S01Parser::parse_datagram(char* datagram, size_t datagram_length, 
   {
     unsigned short range;
     sscanf(fields[j + 26], "%hx", &range);
-    msg.ranges[j - index_min] = range / 1000.0;
+    msg.ranges[j - index_min] = range == 0.0 ?
+                                std::numeric_limits<float>::infinity() :
+                                range / 1000.0;
   }
 
   // 297: Number of 8 bit channels (1)
